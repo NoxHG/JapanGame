@@ -1,12 +1,24 @@
 """
+<<<<<<< HEAD
 Protótipo estilo Nebulous - v5 (roguelike frenético, só formas geométricas)
+=======
+NEBULOUS - v6 (roguelike frenético, só formas geométricas)
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 
 Controles:
   W A S D ........ mover
   ESPAÇO ......... dash (gasta energia)
   Botão esquerdo . atirar (segura pra metralhar)
+<<<<<<< HEAD
   Botão direito .. habilidade selecionada (teclas 1-4 ou E trocam):
                    1 Pulso | 2 Salto (teleporte) | 3 Escudo | 4 Buraco negro
+=======
+  Botão direito .. ataque CARREGADO da arma (segure e solte, gasta 20 de energia)
+  1 a 9 .......... habilidades do player (na loja: comprar o item 1-4)
+  Z X C V ........ killstreaks: UAV | Ataque aéreo | Artilharia naval | NUKE
+  F / G .......... usar chip de vida / chip de energia
+  Q ou roda ...... trocar de arma
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
   Q / roda mouse . trocar de arma (armas vêm de perks)
   ESC ............ pausar
   R .............. reiniciar (quando morrer)
@@ -17,6 +29,10 @@ Teste (atalhos de debug):
 
 Instalar: pip install pygame
 """
+<<<<<<< HEAD
+=======
+import colorsys
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 import json
 import math
 import os
@@ -33,32 +49,103 @@ pygame.init()
 # ================================================================= tela
 W, H = 1280, 720  # resolução interna (o jogo é escalado pra janela)
 SIZES = [(960, 540), (1280, 720), (1600, 900), (1920, 1080)]
+<<<<<<< HEAD
 VOL_STEPS = [0.0, 0.25, 0.5, 0.75, 1.0]
 settings = {"size": 1, "full": False, "diff": 1, "music": 2, "sfx": 3, "fx": 2}
 DIFFS = [("Fácil", 0.8, 0.7), ("Normal", 1.0, 1.0), ("Pesadelo", 1.4, 1.5)]  # nome, vida inimiga, dano recebido
+=======
+settings = {"size": 1, "full": False, "diff": 1, "music": 5, "sfx": 7, "sfx_e": 7, "fx": 2, "bright": 10,
+            "cvd": 0, "epi": False, "ball": 0, "weapon": "pistola", "sandbox": False}
+SANDBOX_DEF = {"hp": 100, "regen": 100, "speed": 100, "dmg": 100, "e_hp": 100, "e_dmg": 100, "e_speed": 100,
+               "e_count": 100, "start_wave": 1, "god": False, "inf_energy": False, "all_skills": False}
+sandbox = dict(SANDBOX_DEF)
+
+
+def sbm(key):
+    # multiplicador do sandbox (1.0 quando o sandbox está desligado)
+    return sandbox[key] / 100 if settings["sandbox"] else 1.0
+
+
+def epi():
+    return settings["epi"]
+
+
+# nome, vida inimiga, dano recebido
+DIFFS = [("Fácil", 0.8, 0.7), ("Normal", 1.0, 1.0), ("Difícil", 1.3, 1.4), ("Hardcore", 1.6, 2.0),
+         ("Speedrun", 1.0, 1.2), ("Doom", 2.0, 2.2), ("Abyss", 2.6, 3.0)]
+# velocidade inimiga, recompensa, tempo da sala, cura entre ondas, onda recorde pra desbloquear, descrição
+DIFF_X = [
+    dict(spd=0.9, rew=0.7, time=1.0, heal=1.0, unlock=0, desc="Inimigos mais fracos e lentos. Recompensas menores."),
+    dict(spd=1.0, rew=1.0, time=1.0, heal=1.0, unlock=0, desc="A experiência padrão do jogo."),
+    dict(spd=1.1, rew=1.3, time=1.0, heal=1.0, unlock=0, desc="Inimigos mais resistentes e que batem mais forte."),
+    dict(spd=1.15, rew=2.0, time=1.0, heal=0.0, unlock=0, desc="Sem cura entre as ondas. Dano recebido dobrado."),
+    dict(spd=1.2, rew=1.6, time=0.35, heal=1.0, unlock=0, desc="Cada sala tem pouco tempo: a sede de sangue chega rápido!"),
+    dict(spd=1.3, rew=3.0, time=1.0, heal=0.5, unlock=20, desc="Inimigos brutais e mais elites. Desbloqueia ao chegar na onda 20."),
+    dict(spd=1.4, rew=5.0, time=0.8, heal=0.0, unlock=30, desc="O abismo. Sem cura, tempo curto. Desbloqueia ao chegar na onda 30."),
+]
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 FX_LEVELS = [("Poucas", 0.5), ("Normal", 1.0), ("MUITAS", 2.0), ("GORE", 3.5)]  # multiplicador de partículas
 
 
 def fxm():
+<<<<<<< HEAD
     return FX_LEVELS[settings["fx"]][1]
 
 
 SAVE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nebulous_save.json")
 save_data = {"best_wave": 0, "best_dmg": 0, "best_streak": 0, "best_kills": 0}
+=======
+    v = FX_LEVELS[settings["fx"]][1]
+    return min(v, 1.0) if settings["epi"] else v
+
+
+SAVE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nebulous_save.json")
+save_data = {"best_wave": 0, "best_dmg": 0, "best_streak": 0, "best_kills": 0, "best_score": 0, "coins": 0,
+             "diamonds": 0, "runes": {}, "weapons": ["pistola"], "colors": [0], "xp": 0, "runs": 0}
+
+
+def level_info(xp):
+    lvl, need = 1, 300
+    while xp >= need:
+        xp -= need
+        lvl += 1
+        need = int(need * 1.25)
+    return lvl, xp, need
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 
 
 def load_save():
     try:
         with open(SAVE_PATH, encoding="utf-8") as f:
+<<<<<<< HEAD
             save_data.update(json.load(f))
     except Exception:
         pass
+=======
+            data = json.load(f)
+    except Exception:
+        return
+    if "save" in data:
+        save_data.update(data.get("save", {}))
+        for k, v in data.get("settings", {}).items():
+            if k in settings:
+                settings[k] = v
+        for k, v in data.get("sandbox", {}).items():
+            if k in sandbox:
+                sandbox[k] = v
+    else:  # arquivos de versões antigas
+        save_data.update(data)
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 
 
 def write_save():
     try:
         with open(SAVE_PATH, "w", encoding="utf-8") as f:
+<<<<<<< HEAD
             json.dump(save_data, f)
+=======
+            json.dump({"save": save_data, "settings": settings, "sandbox": sandbox}, f)
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
     except Exception:
         pass
 
@@ -92,12 +179,23 @@ def apply_display():
         display = pygame.display.set_mode(SIZES[settings["size"]])
 
 
+<<<<<<< HEAD
+=======
+_bright_cache = {}
+
+
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 def present(shake=0.0):
     dw, dh = display.get_size()
     sc = min(dw / W, dh / H)
     sw, sh = int(W * sc), int(H * sc)
     ox, oy = (dw - sw) // 2, (dh - sh) // 2
     view["scale"], view["ox"], view["oy"] = sc, ox, oy
+<<<<<<< HEAD
+=======
+    if epi():
+        shake *= 0.3
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
     sx = int(random.uniform(-shake, shake)) if shake > 0 else 0
     sy = int(random.uniform(-shake, shake)) if shake > 0 else 0
     display.fill((0, 0, 0))
@@ -105,6 +203,19 @@ def present(shake=0.0):
         display.blit(canvas, (ox + sx, oy + sy))
     else:
         display.blit(pygame.transform.scale(canvas, (sw, sh)), (ox + int(sx * sc), oy + int(sy * sc)))
+<<<<<<< HEAD
+=======
+    b = settings["bright"]
+    if b != 10:  # brilho: véu preto (escurece) ou branco (clareia)
+        key = (display.get_size(), b < 10)
+        ov = _bright_cache.get(key)
+        if ov is None:
+            ov = pygame.Surface(display.get_size())
+            ov.fill((0, 0, 0) if b < 10 else (255, 255, 255))
+            _bright_cache[key] = ov
+        ov.set_alpha(int((10 - b) / 10 * 255 * 0.85) if b < 10 else int((b - 10) / 10 * 255 * 0.4))
+        display.blit(ov, (0, 0))
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
     pygame.display.flip()
 
 
@@ -116,6 +227,10 @@ def get_mouse():
 # ================================================================= cores
 WHITE = (245, 245, 245)
 ARMOR_RED = (255, 0, 0)
+<<<<<<< HEAD
+=======
+E_BULLET = (255, 70, 70)
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 BLUE = (80, 170, 255)
 BLOODLUST_BG = (62, 0, 14)
 SPIKE_BASE = 18
@@ -125,7 +240,18 @@ BOSS_TIME = 600   # 10 minutos
 AMBIENT = 80      # partículas de poeira no fundo (0 desliga)
 EVENT_NAMES = {"dark": "EVENTO: ESCURIDÃO", "hazard": "EVENTO: CHÃO INSTÁVEL", "rush": "EVENTO: REFORÇOS A CAMINHO"}
 BOSS_SUBS = {"boss": "O Guardião", "boss_orb": "A Esfera Furiosa", "boss_twin": "Os Irmãos Conectados"}
+<<<<<<< HEAD
 SKILLS = [("Pulso", 35, 0.8), ("Salto", 25, 0.5), ("Escudo", 40, 6.0), ("Buraco", 45, 8.0)]  # nome, energia, recarga
+=======
+SKILLS = [("Pulso", 35, 0.8), ("Salto", 25, 0.5), ("Escudo", 40, 6.0), ("Buraco", 45, 8.0),
+          ("Fúria", 40, 14.0), ("Tempo", 45, 16.0), ("Drone", 50, 18.0), ("Onda", 30, 5.0)]  # nome, energia, recarga
+SKILL_DESC = ["Apaga tiros inimigos e quebra escudos.", "Teleporte curto com invulnerabilidade.",
+              "Absorve 3 golpes ou 4 segundos.", "Puxa tiros e inimigos e causa dano contínuo.",
+              "6s de cadência +60% e velocidade +25%.", "4s de câmera lenta pros inimigos.",
+              "Drone que atira sozinho por 10s.", "Onda de choque que empurra e fere em volta."]
+SKILL_PRICE = {4: 350, 5: 450, 6: 550, 7: 300}
+NUM_KEYS = [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9]
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 
 
 # ================================================================= utilidades
@@ -256,7 +382,12 @@ SND = {}
 SR = 44100
 CH = 1
 _last_play = {}
+<<<<<<< HEAD
 SFX_GAP = {"shoot": 25, "hit": 30, "shield_hit": 30, "eshoot": 40}
+=======
+SFX_GAP = {"shoot": 25, "hit": 30, "shield_hit": 30, "eshoot": 40, "coin": 40, "slash": 60}
+ENEMY_SFX = {"eshoot", "kill", "boss", "bloodlust"}
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 
 
 def synth(f0, f1, dur, vol=0.3, wave="sine", noise=0.0, decay=3.0):
@@ -314,6 +445,16 @@ def init_audio():
         SND["zap"] = synth(1800, 200, 0.22, 0.2, "saw", noise=0.3, decay=4)
         SND["boom"] = synth(120, 40, 0.4, 0.3, "saw", noise=0.6, decay=3)
         SND["rocket"] = synth(260, 90, 0.2, 0.14, "saw", noise=0.5, decay=3)
+<<<<<<< HEAD
+=======
+        SND["slash"] = synth(1500, 300, 0.12, 0.16, "saw", noise=0.5, decay=5)
+        SND["coin"] = synth(1200, 1800, 0.08, 0.12, "square", decay=6)
+        SND["ks_ready"] = synth(500, 1200, 0.35, 0.2, "square", decay=2)
+        SND["nuke"] = synth(60, 30, 2.0, 0.4, "saw", noise=0.2, decay=0.8)
+        SND["siren"] = synth(500, 900, 0.7, 0.16, "saw", decay=0.5)
+        SND["buy"] = synth(800, 1500, 0.15, 0.16, "sine", decay=4)
+        SND["denied"] = synth(180, 120, 0.15, 0.18, "square", decay=5)
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
     except Exception as exc:  # sem áudio? tudo bem, o jogo roda sem som
         print("Áudio desativado:", exc)
         SND.clear()
@@ -327,7 +468,11 @@ def sfx(name, vol=1.0):
     if now - _last_play.get(name, -999) < SFX_GAP.get(name, 20):
         return
     _last_play[name] = now
+<<<<<<< HEAD
     s.set_volume(vol * VOL_STEPS[settings["sfx"]])
+=======
+    s.set_volume(vol * settings["sfx"] / 10 * (settings["sfx_e"] / 10 if name in ENEMY_SFX else 1.0))
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
     s.play()
 
 
@@ -422,7 +567,11 @@ def init_music():
 def music_update(dt, calm_t, inten_t):
     if not _music_ch:
         return
+<<<<<<< HEAD
     mv = VOL_STEPS[settings["music"]]
+=======
+    mv = settings["music"] / 10
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
     _mv["c"] += clamp(calm_t - _mv["c"], -dt * 0.8, dt * 0.8)
     _mv["i"] += clamp(inten_t - _mv["i"], -dt * 0.8, dt * 0.8)
     _music_ch[0].set_volume(_mv["c"] * mv * 0.6)
@@ -444,6 +593,27 @@ RARITIES = [
     ("Exterminador", (255, 255, 255), 15.0, 0.08),
 ]
 
+<<<<<<< HEAD
+=======
+CVD_MODES = ["Desligado", "Protanopia", "Deuteranopia", "Tritanopia"]
+_RAR_BASE = [r[1] for r in RARITIES]
+_CVD_RG = [(170, 170, 170), (255, 230, 120), (120, 220, 255), (60, 110, 255), (255, 160, 255), (170, 70, 220),
+           (255, 200, 40), (255, 130, 0), (120, 50, 210), (255, 255, 255)]
+_CVD_T = [(170, 170, 170), (255, 170, 200), (120, 230, 160), (255, 120, 160), (255, 200, 60), (255, 90, 90),
+          (255, 255, 120), (255, 60, 60), (200, 60, 120), (255, 255, 255)]
+
+
+def apply_cvd(mode):
+    # troca as cores de raridade e de inimigos/tiros por paletas mais distinguíveis
+    global ARMOR_RED, E_BULLET
+    pal = _RAR_BASE if mode == 0 else (_CVD_T if mode == 3 else _CVD_RG)
+    for i, c in enumerate(pal):
+        RARITIES[i] = (RARITIES[i][0], c, RARITIES[i][2], RARITIES[i][3])
+    ARMOR_RED = (255, 0, 0) if mode == 0 else ((255, 170, 0) if mode in (1, 2) else (255, 60, 150))
+    E_BULLET = (255, 70, 70) if mode == 0 else (255, 200, 60)
+
+
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 # (nome, stat, valor base, texto, formato)   formato: pct | pct1 | int | dec1
 PERKS = [
     ("Ferro Quente", "dmg", 0.10, "+{}% de dano", "pct"),
@@ -492,8 +662,110 @@ WEAPONS = {
                     pellets=1, spread=0, mode="rand", speed=0, pierce=0, bounce=0, snd="rocket",
                     desc="Foguete teleguiado que explode em área."),
 }
+<<<<<<< HEAD
 WEAPON_PERK_KEYS = ["metra", "escopeta", "rifle", "triplo", "ricochete", "canhao", "agulha", "orbe", "duplo"]
 BOSS_WEAPON_KEYS = ["cajado", "foguete"]
+=======
+WEAPONS.update({
+    "ak": dict(name="Fuzil de Assalto", cd=0.085, pellets=1, spread=0.07, mode="rand", speed=1100, dmg=6.5, pierce=0,
+               bounce=0, life=1.2, snd="shoot", desc="Rajadas rápidas e estáveis."),
+    "smg": dict(name="Submetralhadora", cd=0.05, pellets=1, spread=0.16, mode="rand", speed=1000, dmg=3.4, pierce=0,
+                bounce=0, life=0.9, snd="shoot", desc="Cadência absurda, dano baixo."),
+    "lmg": dict(name="Metralhadora Pesada", cd=0.065, pellets=1, spread=0.1, mode="rand", speed=1050, dmg=8, pierce=0,
+                bounce=0, life=1.2, size=5, snd="shoot_heavy", desc="Projéteis grossos em rajada contínua."),
+    "sniper": dict(name="Sniper", cd=1.0, pellets=1, spread=0.0, mode="rand", speed=2800, dmg=80, pierce=5, bounce=0,
+                   life=1.2, size=3, line=True, snd="shoot_heavy", desc="Um tiro letal que perfura até 5 alvos."),
+    "plasma": dict(name="Rifle de Plasma", cd=0.11, pellets=1, spread=0.05, mode="rand", speed=900, dmg=9, pierce=0,
+                   bounce=0, life=1.3, size=6, snd="zap", desc="Projéteis de plasma grossos."),
+    "autoshot": dict(name="Escopeta Automática", cd=0.28, pellets=5, spread=0.45, mode="rand", speed=850, dmg=5.5,
+                     pierce=0, bounce=0, life=0.5, snd="shoot_heavy", desc="Escopeta de tiro rápido."),
+    "granada": dict(name="Lança-Granadas", type="rocket", cd=0.9, dmg=45, radius=110, max=480, turn=0.0, life=0.9,
+                    pellets=1, spread=0, mode="rand", speed=0, pierce=0, bounce=0, snd="rocket",
+                    desc="Granada explosiva de curto alcance (sem guiagem)."),
+    "railgun": dict(name="Railgun", type="beam", cd=1.4, dmg=90, width=14, pellets=1, spread=0, mode="rand", speed=0,
+                    pierce=0, bounce=0, life=0, snd="zap", desc="Raio instantâneo que atravessa tudo."),
+    "tesla": dict(name="Bastão Tesla", type="chain", cd=0.35, dmg=14, jumps=5, range=420, hop=230, pellets=1, spread=0,
+                  mode="rand", speed=0, pierce=0, bounce=0, life=0, snd="zap", desc="Raio em cadeia que salta entre inimigos."),
+    "bfg": dict(name="BFG Sagrada", type="bfg", cd=1.8, dmg=100, radius=190, speed=330, life=3.0, pellets=1, spread=0,
+                mode="rand", pierce=0, bounce=0, snd="boom",
+                desc="Esfera sagrada: explode e fulmina todos os inimigos à vista."),
+    "chama": dict(name="Lança-Chamas", type="flame", cd=0.04, dmg=2.6, range=260, cone=0.5, pellets=1, spread=0,
+                  mode="rand", speed=0, pierce=0, bounce=0, life=0, snd="shoot",
+                  desc="Jato curto e contínuo que queima tudo na frente."),
+    "katana": dict(name="Katana", type="melee", cd=0.32, dmg=26, range=115, arc=2.0, parry=True, pellets=1, spread=0,
+                   mode="rand", speed=0, pierce=0, bounce=0, life=0, snd="slash",
+                   desc="Corte rápido em arco. Rebate projéteis (parry) e executa inimigos quase mortos."),
+    "foice": dict(name="Foice", type="melee", cd=0.55, dmg=34, range=145, arc=3.2, heal=0.5, pellets=1, spread=0,
+                  mode="rand", speed=0, pierce=0, bounce=0, life=0, snd="slash",
+                  desc="Arco amplo. Recupera um pouco de vida ao acertar."),
+    "martelo": dict(name="Martelo", type="melee", cd=0.9, dmg=75, range=105, arc=1.6, shock=True, pellets=1, spread=0,
+                    mode="rand", speed=0, pierce=0, bounce=0, life=0, snd="slash",
+                    desc="Pesado: cria uma onda de choque no impacto."),
+})
+WEAPON_PERK_KEYS = ["metra", "escopeta", "rifle", "triplo", "ricochete", "canhao", "agulha", "orbe", "duplo",
+                    "ak", "smg", "lmg", "sniper", "plasma", "autoshot", "granada", "tesla", "chama", "katana", "foice", "martelo"]
+# ataque carregado (botão direito): padrão por tipo de arma, com exceções por arma
+CHARGE_DEFAULT = {"bullet": "nova", "melee": "wave", "beam": "megabeam", "rocket": "salvo", "chain": "storm",
+                  "bfg": "blast", "flame": "inferno"}
+CHARGE_MAP = {"pistola": "slug", "rifle": "slug", "sniper": "slug", "canhao": "blast", "agulha": "nova", "orbe": "nova"}
+CHARGE_NAMES = {"nova": "Nova de Projéteis", "slug": "Tiro Perfurante", "wave": "Onda de Corte",
+                "megabeam": "Raio Supremo", "salvo": "Salva Teleguiada", "storm": "Tempestade Elétrica",
+                "blast": "Explosão Devastadora", "inferno": "Nova Ígnea"}
+
+
+def charge_kind(key):
+    return CHARGE_MAP.get(key) or CHARGE_DEFAULT[WEAPONS[key].get("type", "bullet")]
+
+
+START_WEAPONS = [("pistola", 0), ("metra", 300), ("triplo", 450), ("escopeta", 500), ("ak", 650), ("katana", 800),
+                 ("rifle", 900), ("tesla", 1300), ("canhao", 1600), ("sniper", 2000), ("foice", 2300), ("bfg", 6000)]
+
+
+def weapon_price(key):
+    return int(dict(START_WEAPONS).get(key, 700) * 0.8) + 120
+
+
+BALL_COLORS = [("Branco", (245, 245, 245), 0), ("Ciano", (120, 230, 255), 0), ("Verde", (130, 255, 150), 0),
+               ("Amarelo", (255, 230, 90), 0), ("Laranja", (255, 160, 60), 0), ("Rosa", (255, 130, 200), 0),
+               ("Roxo", (190, 130, 255), 0), ("Azul", (110, 150, 255), 0), ("Vermelho", (255, 90, 90), 0),
+               ("Dourado", (255, 205, 60), 300), ("Arco-íris", None, 800)]
+
+
+def ball_color(t, idx=None):
+    c = BALL_COLORS[settings["ball"] if idx is None else idx][1]
+    if c is None:
+        r, g, b = colorsys.hsv_to_rgb((t * 0.25) % 1.0, 0.55, 1.0)
+        return (int(r * 255), int(g * 255), int(b * 255))
+    return c
+
+
+# id, nome, descrição, efeito por nível, nível máximo, custo base (diamantes; o custo cresce por nível)
+RUNES = [
+    ("vigor", "Vigor", "+10 vida máxima por nível", {"maxhp": 10}, 10, 1),
+    ("gatilho", "Gatilho Rúnico", "+4% de cadência de tiro por nível", {"rate": 0.04}, 10, 1),
+    ("vento", "Pés de Vento", "+3% de velocidade de movimento por nível", {"speed": 0.03}, 10, 1),
+    ("folego", "Fôlego", "+6% de recarga de energia por nível", {"regen": 0.06}, 10, 1),
+    ("dashr", "Dash Afiado", "-3% de custo e +4% de distância do dash por nível", {"dashcost": 0.03, "dashdist": 0.04}, 8, 1),
+    ("furia", "Fúria", "+4% de dano por nível", {"dmg": 0.04}, 10, 2),
+    ("cobica", "Cobiça", "+10% de chips (dinheiro) ganhos por nível", {"money": 0.10}, 10, 2),
+    ("diamante", "Olho de Diamante", "+10% de diamantes por boss por nível", {"dia": 0.10}, 5, 3),
+    ("sabio", "Sábio", "+8% de pontuação por nível", {"xp": 0.08}, 10, 2),
+    ("pulso", "Pulso Vital", "+0.15 de vida por segundo por nível", {"hpregen": 0.15}, 5, 3),
+    ("sede", "Sede Rúnica", "+0.6% do dano vira vida por nível", {"lifesteal": 0.006}, 5, 3),
+    ("ima", "Ímã de Chips", "+25% de alcance de coleta por nível", {"magnet": 0.25}, 5, 2),
+    ("revive", "Segunda Chance", "Passiva: revive uma vez por run com 40% da vida", {"revive": 1}, 1, 8),
+    ("escudoi", "Escudo Inicial", "Passiva: começa cada run com um escudo de 3 golpes", {"startshield": 1}, 1, 5),
+    ("estoque", "Estoque", "Passiva: começa a run com 1 chip de vida por nível", {"startchip": 1}, 3, 3),
+    ("operador", "Operador", "Passiva: -8% de kills necessárias pros killstreaks por nível", {"ksdisc": 0.08}, 5, 4),
+]
+
+
+def rune_cost(r, lvl):
+    return r[5] * (lvl + 1)
+
+
+BOSS_WEAPON_KEYS = ["cajado", "foguete", "bfg", "railgun"]
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 
 
 def fmt_val(v, kind):
@@ -513,9 +785,17 @@ def weapon_perk(key, ridx, boss_drop=False):
             "desc": wpn["desc"], "boss_drop": boss_drop}
 
 
+<<<<<<< HEAD
 def roll_perk(mini=False, bonus=0.0, boss_weapon=False):
     weights = [r[3] * (1 + bonus * i) for i, r in enumerate(RARITIES)]
     ridx = random.choices(range(len(RARITIES)), weights=weights)[0]
+=======
+def roll_perk(mini=False, bonus=0.0, boss_weapon=False, force_r=None):
+    weights = [r[3] * (1 + bonus * i) for i, r in enumerate(RARITIES)]
+    ridx = random.choices(range(len(RARITIES)), weights=weights)[0]
+    if force_r is not None:
+        ridx = force_r
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
     mult = RARITIES[ridx][2]
     if boss_weapon:
         return weapon_perk(random.choice(BOSS_WEAPON_KEYS), ridx, True)
@@ -890,7 +1170,11 @@ class Enemy:
 
         # núcleo (pisca na sede de sangue)
         core_col = WHITE
+<<<<<<< HEAD
         if bl and int(t * 12) % 2 == 0:
+=======
+        if bl and not epi() and int(t * 12) % 2 == 0:
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
             core_col = (255, 90, 90)
         if self.flash > 0 and self.armor <= 0:
             core_col = (255, 190, 190)
@@ -1085,7 +1369,11 @@ class OrbBoss(Enemy):
             pygame.draw.circle(surf, WHITE, self.pos, int(self.core_r))
         else:
             col = WHITE
+<<<<<<< HEAD
             if bl and int(t * 12) % 2 == 0:
+=======
+            if bl and not epi() and int(t * 12) % 2 == 0:
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
                 col = (255, 90, 90)
             if self.flash > 0:
                 col = (255, 190, 190)
@@ -1287,7 +1575,11 @@ class TwinBoss(Enemy):
             if not dm.gone:
                 dm.draw(surf)
         col = WHITE
+<<<<<<< HEAD
         if bl and int(t * 12) % 2 == 0:
+=======
+        if bl and not epi() and int(t * 12) % 2 == 0:
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
             col = (255, 90, 90)
         if self.flash > 0 and self.core_exposed():
             col = (255, 190, 190)
@@ -1430,10 +1722,21 @@ class Player:
         self.hp = 100.0
         self.energy = 100.0
         self.mods = {k: 0.0 for k in ("dmg", "rate", "speed", "maxhp", "frag", "regen", "bspeed", "dashcost", "dashdist",
+<<<<<<< HEAD
                                        "lifesteal", "hpregen", "waveheal")}
         self.perks = []   # até 6
         self.minis = []   # até 12
         self.cur = 0      # arma equipada (0 = pistola)
+=======
+                                       "lifesteal", "hpregen", "waveheal", "money", "dia", "xp", "magnet", "revive",
+                                       "startshield", "startchip", "ksdisc")}
+        self.perks = []   # até 6
+        self.minis = []   # até 12
+        w0 = settings["weapon"]
+        self.base_weapon = w0 if (w0 in WEAPONS and (w0 in save_data["weapons"] or settings["sandbox"])) else "pistola"
+        self.arsenal = []  # armas compradas na loja: (chave, raridade)
+        self.cur = 0       # arma equipada (0 = arma inicial)
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
         self.invuln = 0.0
         self.bullet_inv = 0.0
         self.kb_t = 0.0
@@ -1444,6 +1747,7 @@ class Player:
         self.special_cd = 0.0
         self.ghost_timer = 0.0
         self.skill = 0
+<<<<<<< HEAD
         self.skill_cd = [0.0] * 4
         self.shield_t = 0.0
         self.shield_hits = 0
@@ -1451,6 +1755,26 @@ class Player:
     @property
     def max_hp(self):
         return 100 + self.mods["maxhp"]
+=======
+        self.owned_skills = list(range(8)) if (settings["sandbox"] and sandbox["all_skills"]) else [0, 1, 2, 3]
+        self.skill_cd = [0.0] * 12
+        self.shield_t = 0.0
+        self.shield_hits = 0
+        self.fury_t = 0.0
+        self.charge = 0.0
+        self.charge_cd = 0.0
+        self.chips = {"hp": 0, "en": 0}
+        self.revived = False
+        self.recalc()
+        self.hp = float(self.max_hp)
+        if self.mods["startshield"]:
+            self.shield_t, self.shield_hits = 60.0, 3
+        self.chips["hp"] = int(self.mods["startchip"])
+
+    @property
+    def max_hp(self):
+        return (sandbox["hp"] if settings["sandbox"] else 100) + self.mods["maxhp"]
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 
     @property
     def dash_cost(self):
@@ -1458,7 +1782,11 @@ class Player:
 
     @property
     def move_speed(self):
+<<<<<<< HEAD
         return 340 * (1 + self.mods["speed"])
+=======
+        return 340 * (1 + self.mods["speed"]) * (1.25 if self.fury_t > 0 else 1.0) * sbm("speed")
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 
     @property
     def dash_time(self):
@@ -1467,6 +1795,7 @@ class Player:
     def weapon_perks(self):
         return [p for p in self.perks if p["kind"] == "weapon"]
 
+<<<<<<< HEAD
     def weapon(self):
         wp = self.weapon_perks()
         if self.cur <= 0 or self.cur > len(wp):
@@ -1476,6 +1805,21 @@ class Player:
 
     def cycle_weapon(self):
         self.cur = (self.cur + 1) % (len(self.weapon_perks()) + 1)
+=======
+    def weapon_entries(self):
+        return [(self.base_weapon, 0)] + list(self.arsenal) + [(p["weapon"], p["rarity"]) for p in self.weapon_perks()]
+
+    def weapon(self):
+        e = self.weapon_entries()
+        return e[self.cur % len(e)]
+
+    def cycle_weapon(self):
+        self.cur = (self.cur + 1) % len(self.weapon_entries())
+
+    def add_arsenal(self, key, ridx):
+        self.arsenal.append((key, ridx))
+        self.cur = len(self.arsenal)
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 
     def recalc(self):
         old_max = self.max_hp
@@ -1483,6 +1827,13 @@ class Player:
         for p in self.perks + self.minis:
             if p["kind"] == "stat":
                 m[p["stat"]] += p["value"]
+<<<<<<< HEAD
+=======
+        for r in RUNES:
+            lvl = save_data["runes"].get(r[0], 0)
+            for k, v in r[3].items():
+                m[k] += v * lvl
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
         self.mods = m
         new_max = self.max_hp
         if new_max > old_max:
@@ -1500,9 +1851,15 @@ class Player:
         if kind == "main":
             wp = self.weapon_perks()
             if perk["kind"] == "weapon":
+<<<<<<< HEAD
                 self.cur = 1 + [i for i, p in enumerate(wp) if p is perk][0]
             else:
                 self.cur = min(self.cur, len(wp))
+=======
+                self.cur = 1 + len(self.arsenal) + [i for i, p in enumerate(wp) if p is perk][0]
+            else:
+                self.cur = min(self.cur, len(self.weapon_entries()) - 1)
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 
     def hurt(self, amount, from_pos=None, knock=350):
         if self.invuln > 0:
@@ -1894,7 +2251,11 @@ class Game:
 
     # ---------------------------------------------------------- combate: dano, explosões, raios
     def burst(self, pos, n, speed=(80, 300), life=(0.3, 0.6), r=(1.5, 3.2), col=(255, 255, 255), shape=None, glow=False):
+<<<<<<< HEAD
         n = int(n * FX_LEVELS[settings["fx"]][1] + random.random())
+=======
+        n = int(n * fxm() + random.random())
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
         multi = isinstance(col, list)
         for _ in range(n):
             v = from_angle(random.uniform(0, math.tau)) * random.uniform(*speed)
@@ -1906,7 +2267,11 @@ class Game:
         self.blasts.append({"p": Vector2(pos), "r": radius, "t": 0.0, "col": col})
 
     def splat(self, pos, n, col=(140, 0, 14), spread=26, size=(2, 7)):
+<<<<<<< HEAD
         n = int(n * FX_LEVELS[settings["fx"]][1] + random.random())
+=======
+        n = int(n * fxm() + random.random())
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
         for _ in range(n):
             off = from_angle(random.uniform(0, math.tau)) * random.uniform(0, spread) * random.random()
             pygame.draw.circle(decal_surf, (col[0], col[1], col[2], random.randint(90, 190)),
@@ -2540,7 +2905,11 @@ class Game:
 
     def draw_player(self, surf, mouse):
         pl = self.player
+<<<<<<< HEAD
         if pl.invuln > 0 and int(pl.invuln * 20) % 2 == 0:
+=======
+        if pl.invuln > 0 and not epi() and int(pl.invuln * 20) % 2 == 0:
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
             return
         s = pl.stretch
         pygame.draw.polygon(surf, WHITE, ellipse_points(pl.pos.x, pl.pos.y, pl.r * s, pl.r / s, pl.stretch_ang))
@@ -2729,7 +3098,13 @@ class Game:
             tv = Vector2(-n.y, n.x)
             pygame.draw.polygon(screen, WHITE, [r["p"] + n * 11, r["p"] - n * 8 + tv * 5, r["p"] - n * 8 - tv * 5])
         for b in self.ebullets:
+<<<<<<< HEAD
             pygame.draw.circle(screen, (255, 70, 70), b["p"], 5)
+=======
+            pygame.draw.circle(screen, E_BULLET, b["p"], 5)
+            if settings["cvd"]:
+                pygame.draw.circle(screen, WHITE, b["p"], 2)
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 
         overlay.fill((0, 0, 0, 0))
         for g in self.ghosts:
@@ -2748,7 +3123,11 @@ class Game:
                 pygame.draw.rect(overlay, col, (p["p"].x - s, p["p"].y - s, s * 2, s * 2))
             else:
                 pygame.draw.circle(overlay, col, p["p"], max(1, int(p["r"] * (0.4 + 0.6 * u))))
+<<<<<<< HEAD
             if p.get("glow"):
+=======
+            if p.get("glow") and not epi():
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
                 pygame.draw.circle(overlay, (c[0], c[1], c[2], a // 5), p["p"], max(2, int(p["r"] * 4)))
         for pu in self.pulses:
             a = int(255 * clamp(1 - pu["r"] / 300, 0, 1))
@@ -2847,14 +3226,22 @@ class Game:
                 draw_center(screen, "NOVO RECORDE!", font_m, lerp_color((180, 140, 20), (255, 230, 90), pulse), (W // 2, panel.bottom - 70))
             draw_center(screen, "R: jogar de novo   |   M: menu principal", font_b, WHITE, (W // 2, panel.bottom - 30))
 
+<<<<<<< HEAD
         if self.hurt_flash > 0:  # vinheta vermelha ao levar dano
+=======
+        if self.hurt_flash > 0 and not epi():  # vinheta vermelha ao levar dano
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
             dim_layer.fill((0, 0, 0, 0))
             k = clamp(self.hurt_flash / 0.35, 0, 1)
             for i in range(10):
                 pygame.draw.rect(dim_layer, (255, 0, 0, int(150 * k * (1 - i / 10))), (i * 6, i * 6, W - i * 12, H - i * 12), 6)
             screen.blit(dim_layer, (0, 0))
 
+<<<<<<< HEAD
         if self.flash > 0:  # flash branco
+=======
+        if self.flash > 0 and not epi():  # flash branco
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
             dim_layer.fill((255, 255, 255, int(255 * clamp(self.flash, 0, 1))))
             screen.blit(dim_layer, (0, 0))
 
@@ -2863,6 +3250,7 @@ class Game:
             pygame.draw.circle(screen, WHITE, mouse, 1)
 
 
+<<<<<<< HEAD
 # XP Flutuante
 
 XP_BASE = {"kami": 50, "dart": 75, "gunner": 100, "splitter": 125, "laser": 175, "healer": 175,
@@ -3071,6 +3459,8 @@ Game.update, Game.draw = _g_update, _g_draw
 Game.hurt_player, Game.finish_run = _g_hurt, _g_finish
  
 
+=======
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 # ================================================================= menu principal / pausa
 menu_actors = []
 menu_bullets = []
@@ -3111,6 +3501,7 @@ def update_menu_bg(dt):
     menu_bullets[:] = [b for b in menu_bullets if -30 < b["p"].x < W + 30 and -30 < b["p"].y < H + 30][-80:]
 
 
+<<<<<<< HEAD
 # ============================================================ MENU COM SUBMENUS
 # Páginas: root (principal/pausa) -> settings -> video / audio
 menu_nav = {"page": "root"}
@@ -3137,10 +3528,22 @@ def menu_items(mode):
                 ("Voltar", "back")]
     items = [("Jogar", "play") if mode == "menu" else ("Continuar", "resume"),
              ("Configurações", "go_settings")]
+=======
+def menu_items(mode):
+    items = [("Jogar", "play") if mode == "menu" else ("Continuar", "resume")]
+    items.append((f"Dificuldade: {DIFFS[settings['diff']][0]}", "diff"))
+    sw, sh = SIZES[settings["size"]]
+    items.append((f"Tela: {sw}x{sh}", "size"))
+    items.append((f"Tela cheia: {'Sim' if settings['full'] else 'Não'}", "full"))
+    items.append((f"Música: {int(VOL_STEPS[settings['music']] * 100)}%", "music"))
+    items.append((f"Efeitos: {int(VOL_STEPS[settings['sfx']] * 100)}%", "sfx"))
+    items.append((f"Partículas: {FX_LEVELS[settings['fx']][0]}", "fx"))
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
     if mode == "pause":
         items.append(("Menu principal", "menu"))
     items.append(("Sair", "quit"))
     return items
+<<<<<<< HEAD
  
  
 mf_title = pygame.font.SysFont("arial", 88, bold=True, italic=True)
@@ -3253,10 +3656,23 @@ def draw_item_text(r, label, act, c_name, c_val):
  
 def draw_menu(mode, mouse, sel, t, game):
     # ---- fundo
+=======
+
+
+def item_rects(n):
+    return [pygame.Rect(W // 2 - 210, 250 + i * 52, 420, 44) for i in range(n)]
+
+
+def draw_menu(mode, mouse, sel, t, game):
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
     if mode == "pause" and game:
         game.draw(Vector2(-100, -100))
         dim_layer.fill((0, 0, 0, 170))
         screen.blit(dim_layer, (0, 0))
+<<<<<<< HEAD
+=======
+        title = "PAUSADO"
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
     else:
         screen.fill((0, 0, 0))
         draw_background(screen, 1, t, 0.0)
@@ -3266,6 +3682,7 @@ def draw_menu(mode, mouse, sel, t, game):
             pygame.draw.circle(screen, (255, 70, 70), b["p"], 5)
         dim_layer.fill((0, 0, 0, 90))
         screen.blit(dim_layer, (0, 0))
+<<<<<<< HEAD
     pulse = 0.5 + 0.5 * math.sin(t * 2)
     red_pulse = lerp_color((110, 0, 0), ARMOR_RED, pulse)
  
@@ -3341,6 +3758,24 @@ def draw_menu(mode, mouse, sel, t, game):
         screen.blit(font.render(hint, True, (150, 150, 165)), (MENU_X + 10, H - 40))
  
  
+=======
+        title = "NEBULOUS-LIKE"
+    pulse = 0.5 + 0.5 * math.sin(t * 2)
+    draw_center(screen, title, title_font, WHITE, (W // 2, 140))
+    pygame.draw.line(screen, lerp_color((90, 0, 0), (255, 0, 0), pulse), (W // 2 - 230, 190), (W // 2 + 230, 190), 2)
+    items = menu_items(mode)
+    rects = item_rects(len(items))
+    draw_panel(screen, pygame.Rect(W // 2 - 250, rects[0].y - 30, 500, len(items) * 52 + 40), "MENU" if mode == "menu" else "PAUSA")
+    for i, (r, (label, _)) in enumerate(zip(rects, items)):
+        draw_button(screen, r, label, r.collidepoint(mouse), i == sel)
+    if mode == "menu":
+        rec = f"Recorde: onda {save_data['best_wave']}   |   maior sequência {save_data['best_streak']}   |   maior dano total {save_data['best_dmg']}"
+        draw_center(screen, rec, font, (150, 150, 165), (W // 2, H - 52))
+        draw_center(screen, "WASD mover  |  ESPAÇO dash  |  clique esq. atira  |  clique dir. habilidade (1-4)  |  Q arma",
+                    font, (90, 90, 105), (W // 2, H - 28))
+
+
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 def music_targets(mode, game):
     if mode == "menu":
         return 0.7, 0.0
@@ -3358,8 +3793,13 @@ def music_targets(mode, game):
     if game.bloodlust:
         inten = 1.0
     return 0.7, inten
+<<<<<<< HEAD
  
  
+=======
+
+
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 # ================================================================= loop principal
 def main():
     load_save()
@@ -3374,6 +3814,7 @@ def main():
     game = None
     sel = 0
     t = 0.0
+<<<<<<< HEAD
  
     def hover_index():
         m = get_mouse()
@@ -3389,6 +3830,11 @@ def main():
  
     def do_action(act):
         nonlocal mode, game, sel
+=======
+
+    def do_action(act):
+        nonlocal mode, game
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
         sfx("menu")
         if act == "play":
             game = Game()
@@ -3409,6 +3855,7 @@ def main():
             settings["sfx"] = (settings["sfx"] + 1) % len(VOL_STEPS)
         elif act == "fx":
             settings["fx"] = (settings["fx"] + 1) % len(FX_LEVELS)
+<<<<<<< HEAD
         elif act in ("go_settings", "go_video", "go_audio"):
             menu_nav["page"] = act[3:]            # "settings" / "video" / "audio"
             reset_sel()
@@ -3423,13 +3870,25 @@ def main():
             pygame.quit()
             sys.exit()
  
+=======
+        elif act == "menu":
+            mode, game = "menu", None
+        elif act == "quit":
+            pygame.quit()
+            sys.exit()
+
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
     while True:
         dt = min(clock.tick(60) / 1000, 0.05)
         t += dt
         mouse = get_mouse()
         keys = pygame.key.get_pressed()
         buttons = pygame.mouse.get_pressed()
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 pygame.quit()
@@ -3437,21 +3896,29 @@ def main():
             if mode in ("menu", "pause"):
                 items = menu_items(mode)
                 if ev.type == pygame.KEYDOWN:
+<<<<<<< HEAD
                     if ev.key == pygame.K_ESCAPE:
                         if menu_nav["page"] != "root":
                             do_action("back")
                         elif mode == "pause":
                             mode = "game"
+=======
+                    if ev.key == pygame.K_ESCAPE and mode == "pause":
+                        mode = "game"
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
                     elif ev.key == pygame.K_UP:
                         sel = (sel - 1) % len(items)
                     elif ev.key == pygame.K_DOWN:
                         sel = (sel + 1) % len(items)
                     elif ev.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                         do_action(items[sel % len(items)][1])
+<<<<<<< HEAD
                 elif ev.type == pygame.MOUSEMOTION:
                     h = hover_index()
                     if h is not None:
                         sel = h
+=======
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
                 elif ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
                     for r, (_, act) in zip(item_rects(len(items)), items):
                         if r.collidepoint(get_mouse()):
@@ -3460,13 +3927,20 @@ def main():
             elif mode == "game":
                 if ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
                     mode, sel = "pause", 0
+<<<<<<< HEAD
                     menu_nav["page"] = "root"
+=======
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
                 elif ev.type == pygame.KEYDOWN and ev.key == pygame.K_m and game.state == "over":
                     mode, game = "menu", None
                     break
                 else:
                     game.handle_event(ev, keys, mouse)
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
         if mode == "game":
             game.update(dt, keys, mouse, buttons)
             game.draw(mouse)
@@ -3480,7 +3954,12 @@ def main():
             draw_menu(mode, mouse, sel, t, game)
             music_update(dt, *music_targets(mode, game))
             present()
+<<<<<<< HEAD
  
  
+=======
+
+
+>>>>>>> 7f44bf491f235305ef49b29c42423d11a1020e7c
 if __name__ == "__main__":
     main()
